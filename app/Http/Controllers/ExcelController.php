@@ -17,8 +17,19 @@ class ExcelController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls',
+            'file' => 'required|file|mimetypes:
+                application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                application/vnd.ms-excel,
+                text/csv,
+                text/plain,
+                application/csv,
+                application/vnd.ms-excel.sheet.macroEnabled.12,
+                application/vnd.ms-excel.sheet.binary.macroEnabled.12,
+                application/vnd.ms-excel.template.macroEnabled.12,
+                application/vnd.ms-excel.addin.macroEnabled.12
+            ',
         ]);
+        
 
         $file = $request->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
