@@ -5,7 +5,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f9f9f9;
+            background: #f4f4f4;
             padding: 40px;
             display: flex;
             justify-content: center;
@@ -16,7 +16,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
             text-align: center;
         }
@@ -44,7 +44,9 @@
         }
 
         input[type="file"] {
-            flex: 1;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
 
         button {
@@ -70,6 +72,22 @@
             justify-content: center;
             gap: 10px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        table.stats {
+            margin: 0 auto;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table.stats td {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+        }
+
+        table.stats tr:nth-child(1) {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -105,9 +123,27 @@
                     <button>Télécharger le fichier traité</button>
                 </a>
                 <a href="{{ session('downloadUnmatched') }}">
-                    <button>Télécharger uniquement les lignes non matchées</button>
+                    <button>Télécharger les lignes non matchées</button>
                 </a>
             </div>
+        @endif
+
+        @if (session('stats'))
+            <h3>Résultat du traitement</h3>
+            <table class="stats">
+                <tr>
+                    <td>Nombre total de lignes</td>
+                    <td><strong>{{ session('stats.total') }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Lignes matchées</td>
+                    <td><strong>{{ session('stats.matched') }} ({{ session('stats.match_percent') }}%)</strong></td>
+                </tr>
+                <tr>
+                    <td>Lignes non matchées</td>
+                    <td><strong>{{ session('stats.unmatched') }} ({{ session('stats.unmatch_percent') }}%)</strong></td>
+                </tr>
+            </table>
         @endif
     </div>
 </body>

@@ -16,27 +16,18 @@ class ExcelController extends Controller
 
     public function upload(Request $request)
     {
+        // 1. Validation du fichier
         $request->validate([
-            'file' => 'required|file|mimetypes:
-                application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                application/vnd.ms-excel,
-                text/csv,
-                text/plain,
-                application/csv,
-                application/vnd.ms-excel.sheet.macroEnabled.12,
-                application/vnd.ms-excel.sheet.binary.macroEnabled.12,
-                application/vnd.ms-excel.template.macroEnabled.12,
-                application/vnd.ms-excel.addin.macroEnabled.12
-            ',
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt',
         ]);
-        
 
+        // 2. Chargement du fichier
         $file = $request->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray(null, true, true, true);
 
-        // Trouver les indexes des colonnes
+        // 3. Trouver les indexes des colonnes
         $headers = $rows[1];
         $colInsee = array_search('insee', $headers);
         $colInseeListe = array_search('insee_liste', $headers);
@@ -45,12 +36,11 @@ class ExcelController extends Controller
             return back()->withErrors(['Le fichier doit contenir les colonnes insee et insee_liste.']);
         }
 
-        // Récupérer toutes les lignes correspondantes (highlightées)
-        $matchedRows = [];
+        // 4. Marquage des lignes matchées
         $highlightedRows = [];
 
         foreach ($rows as $i => $row) {
-            if ($i === 1) continue; // skip header
+            if ($i === 1) continue;
             $val = $row[$colInseeListe] ?? null;
 
             foreach ($rows as $j => $rowCheck) {
@@ -63,12 +53,12 @@ class ExcelController extends Controller
             }
         }
 
-        // Générer le fichier traité
+        // 5. Génération du fichier traité
         $processedFile = storage_path('app/public/processed.xlsx');
         $writer = new Xlsx($spreadsheet);
         $writer->save($processedFile);
 
-        // Générer le fichier des lignes non matchées
+        // 6. Génération du fichier des lignes non matchées
         $unmatchedSpreadsheet = new Spreadsheet();
         $unmatchedSheet = $unmatchedSpreadsheet->getActiveSheet();
 
@@ -90,10 +80,25 @@ class ExcelController extends Controller
         $writer2 = new Xlsx($unmatchedSpreadsheet);
         $writer2->save($unmatchedFile);
 
+        // 7. Statistiques
+        $total = count($rows) - 1;
+        $matchedCount = count($highlightedRows);
+        $unmatchedCount = $total - $matchedCount;
+        $matchPercent = $total > 0 ? round(($matchedCount / $total) * 100, 2) : 0;
+        $unmatchPercent = $total > 0 ? round(($unmatchedCount / $total) * 100, 2) : 0;
+
+        // 8. Redirection avec données
         return redirect()->route('excel.index')
             ->with('success', 'Fichier traité avec succès.')
             ->with('download', route('excel.download'))
-            ->with('downloadUnmatched', route('excel.downloadUnmatched'));
+            ->with('downloadUnmatched', route('excel.downloadUnmatched'))
+            ->with('stats', [
+                'total' => $total,
+                'matched' => $matchedCount,
+                'unmatched' => $unmatchedCount,
+                'match_percent' => $matchPercent,
+                'unmatch_percent' => $unmatchPercent,
+            ]);
     }
 
     public function download()
