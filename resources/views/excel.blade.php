@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Traitement Excel - Insee</title>
@@ -21,13 +22,14 @@
 
         .container {
             background-color: white;
-            padding: 40px;
+            padding: 40px 60px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            max-width: 600px;
+            max-width: 1140px;
             width: 100%;
             text-align: center;
         }
+        
 
         h1 {
             color: #222;
@@ -80,26 +82,9 @@
             background-color: #0056b3;
         }
 
-        .download-buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        .download-buttons a {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .download-buttons button {
-            width: 100%;
-        }
-
         table.stats {
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             margin: 0 auto;
             border-collapse: collapse;
             margin-top: 20px;
@@ -107,21 +92,68 @@
         }
 
         table.stats td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
+            vertical-align: middle;
         }
 
         table.stats td:first-child {
             text-align: left;
             font-weight: 600;
             background-color: #f8f9fa;
+            width: 45%;
+        }
+
+        .download-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .download-group a button {
+            width: 100%;
         }
 
         #stats-table h3 {
             margin-bottom: 10px;
         }
+
+        table.stats {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            margin-top: 25px;
+            font-size: 16px;
+        }
+        
+        table.stats td {
+            padding: 16px 20px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+        }
+        
+        table.stats td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background-color: #f8f9fa;
+            width: 35%;
+        }
+        
+        table.stats td:nth-child(2) {
+            width: 20%;
+            text-align: center;
+        }
+        
+        table.stats td:last-child {
+            width: 45%;
+            text-align: center;
+            background-color: #fefefe;
+        }
+        
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Charger et traiter un fichier Excel</h1>
@@ -148,22 +180,6 @@
             </div>
         </form>
 
-        @if (session('download'))
-            <div id="download-buttons" class="download-buttons">
-                <a href="{{ session('download') }}">
-                    <button>Télécharger le fichier traité</button>
-                </a>
-                <a href="{{ session('downloadUnmatched') }}">
-                    <button>Télécharger les lignes non matchées</button>
-                </a>
-                @if (session('downloadMatched'))
-                    <a href="{{ session('downloadMatched') }}">
-                        <button>Télécharger les lignes matchées</button>
-                    </a>
-                @endif
-            </div>
-        @endif
-
         @if (session('stats'))
             <div id="stats-table">
                 <h3>Résultat du traitement</h3>
@@ -171,33 +187,53 @@
                     <tr>
                         <td>Nombre total de lignes</td>
                         <td><strong>{{ session('stats.total') }}</strong></td>
+                        <td>
+                            <a href="{{ session('download') }}">
+                                <button>Télécharger</button>
+                            </a>
+                            <br/><small>Full (fichier traité)</small>
+
+                        </td>
                     </tr>
                     <tr>
-                        <td>Lignes matchées</td>
+                        <td>Lignes matchées <br/><small>(colorié en jaune)</small></td>
                         <td><strong>{{ session('stats.matched') }} ({{ session('stats.match_percent') }}%)</strong></td>
+                        <td>
+                            @if (session('downloadMatched'))
+                                <a href="{{ session('downloadMatched') }}">
+                                    <button>Télécharger</button>
+                                </a>
+                            @endif
+                        </td>
                     </tr>
                     <tr>
                         <td>Lignes non matchées</td>
-                        <td><strong>{{ session('stats.unmatched') }} ({{ session('stats.unmatch_percent') }}%)</strong></td>
+                        <td><strong>{{ session('stats.unmatched') }} ({{ session('stats.unmatch_percent') }}%)</strong>
+                        </td>
+                        <td>
+                            <a href="{{ session('downloadUnmatched') }}">
+                                <button>Télécharger</button>
+                            </a>
+                        </td>
                     </tr>
                 </table>
             </div>
         @endif
+
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('fileInput');
-            const downloadButtons = document.getElementById('download-buttons');
             const statsTable = document.getElementById('stats-table');
 
             if (fileInput) {
                 fileInput.addEventListener('change', () => {
-                    if (downloadButtons) downloadButtons.style.display = 'none';
                     if (statsTable) statsTable.style.display = 'none';
                 });
             }
         });
     </script>
 </body>
+
 </html>
