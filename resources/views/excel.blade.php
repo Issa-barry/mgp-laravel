@@ -118,15 +118,21 @@
         </form>
 
         @if (session('download'))
-            <div id="download-buttons" class="download-buttons">
-                <a href="{{ session('download') }}">
-                    <button id="btn-processed">Télécharger le fichier traité</button>
+        <div id="download-buttons" class="download-buttons">
+            <a href="{{ session('download') }}">
+                <button id="btn-processed">Télécharger le fichier traité</button>
+            </a>
+            <a href="{{ session('downloadUnmatched') }}">
+                <button id="btn-unmatched">Télécharger les lignes non matchées</button>
+            </a>
+            @if (session('downloadMatched'))
+                <a href="{{ session('downloadMatched') }}">
+                    <button id="btn-matched">Télécharger les lignes matchées</button>
                 </a>
-                <a href="{{ session('downloadUnmatched') }}">
-                    <button id="btn-unmatched">Télécharger les lignes non matchées</button>
-                </a>
-            </div>
-        @endif
+            @endif
+        </div>
+    @endif
+    
 
         @if (session('stats'))
             <div id="stats-table">
