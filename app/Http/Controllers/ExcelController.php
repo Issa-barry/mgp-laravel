@@ -95,7 +95,7 @@ class ExcelController extends Controller
             //     $rowIndex++;
             // }
 
-            // Si la ligne est dans les lignes mises en surbrillance, avec coloriage en jaune
+            // Si la ligne est dans les lignes mises en surbrillance, avec coloriage en jaune.
             if (in_array($i, $highlightedRows)) {
                 $matchedSheet->fromArray(array_values($row), null, "A$rowIndex");
                 $matchedSheet->getStyle("A$rowIndex:Z$rowIndex")->getFill()->setFillType('solid')
@@ -103,7 +103,7 @@ class ExcelController extends Controller
                 $rowIndex++;
             }
             
-        }
+        } 
         (new Xlsx($matchedSpreadsheet))->save(storage_path('app/public/matched.xlsx'));
 
         // Statistiques
