@@ -1,93 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
     <title>Traitement Excel - Insee</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 40px;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
         }
 
         .container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 700px;
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
             width: 100%;
             text-align: center;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .messages {
-            margin-bottom: 20px;
+            color: #222;
+            font-size: 26px;
+            margin-bottom: 25px;
         }
 
         .messages p {
-            margin: 5px 0;
+            margin: 8px 0;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
         }
 
         .form-row {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
             flex-wrap: wrap;
+            margin-bottom: 25px;
         }
 
         input[type="file"] {
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 14px;
         }
 
         button {
             background-color: #007bff;
-            color: white;
-            padding: 10px 18px;
+            color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 15px;
             cursor: pointer;
-            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
             background-color: #0056b3;
         }
 
-        a {
-            text-decoration: none;
-        }
-
         .download-buttons {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .download-buttons a {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .download-buttons button {
+            width: 100%;
         }
 
         table.stats {
+            width: 100%;
+            max-width: 400px;
             margin: 0 auto;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 14px;
         }
 
         table.stats td {
-            padding: 8px 15px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border: 1px solid #ddd;
         }
 
-        table.stats tr:nth-child(1) {
-            background-color: #f0f0f0;
+        table.stats td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+
+        #stats-table h3 {
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -97,7 +128,7 @@
 
         <div class="messages">
             @if ($errors->any())
-                <div style="color:red;">
+                <div class="error">
                     @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
@@ -105,7 +136,7 @@
             @endif
 
             @if (session('success'))
-                <p style="color:green;">{{ session('success') }}</p>
+                <p class="success">{{ session('success') }}</p>
             @endif
         </div>
 
@@ -118,21 +149,20 @@
         </form>
 
         @if (session('download'))
-        <div id="download-buttons" class="download-buttons">
-            <a href="{{ session('download') }}">
-                <button id="btn-processed">Télécharger le fichier traité</button>
-            </a>
-            <a href="{{ session('downloadUnmatched') }}">
-                <button id="btn-unmatched">Télécharger les lignes non matchées</button>
-            </a>
-            @if (session('downloadMatched'))
-                <a href="{{ session('downloadMatched') }}">
-                    <button id="btn-matched">Télécharger les lignes matchées</button>
+            <div id="download-buttons" class="download-buttons">
+                <a href="{{ session('download') }}">
+                    <button>Télécharger le fichier traité</button>
                 </a>
-            @endif
-        </div>
-    @endif
-    
+                <a href="{{ session('downloadUnmatched') }}">
+                    <button>Télécharger les lignes non matchées</button>
+                </a>
+                @if (session('downloadMatched'))
+                    <a href="{{ session('downloadMatched') }}">
+                        <button>Télécharger les lignes matchées</button>
+                    </a>
+                @endif
+            </div>
+        @endif
 
         @if (session('stats'))
             <div id="stats-table">
@@ -163,13 +193,8 @@
 
             if (fileInput) {
                 fileInput.addEventListener('change', () => {
-                    if (downloadButtons) {
-                        downloadButtons.style.display = 'none';
-                    }
-
-                    if (statsTable) {
-                        statsTable.style.display = 'none';
-                    }
+                    if (downloadButtons) downloadButtons.style.display = 'none';
+                    if (statsTable) statsTable.style.display = 'none';
                 });
             }
         });
