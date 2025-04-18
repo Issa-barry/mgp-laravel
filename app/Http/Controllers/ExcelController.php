@@ -21,6 +21,9 @@ class ExcelController extends Controller
             'file' => 'required|file|mimes:xlsx,xls,csv,txt',
         ]);
 
+     @unlink(storage_path('app/public/processed.xlsx'));
+     @unlink(storage_path('app/public/unmatched.xlsx'));
+
         // 2. Chargement du fichier
         $file = $request->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
@@ -104,12 +107,12 @@ class ExcelController extends Controller
     public function download()
     {
         $path = storage_path('app/public/processed.xlsx');
-        return response()->download($path)->deleteFileAfterSend(true);
+        return response()->download($path)->deleteFileAfterSend(false);
     }
 
     public function downloadUnmatched()
     {
         $path = storage_path('app/public/unmatched.xlsx');
-        return response()->download($path)->deleteFileAfterSend(true);
+        return response()->download($path)->deleteFileAfterSend(false);
     }
 }
