@@ -150,7 +150,7 @@
             text-align: center;
             background-color: #fefefe;
         }
-        /* Media Queries for Responsiveness */
+        /* Media Queries for Responsiveness .*/
     </style>
 </head>
 

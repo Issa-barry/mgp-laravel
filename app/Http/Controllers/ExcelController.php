@@ -106,7 +106,7 @@ class ExcelController extends Controller
         } 
         (new Xlsx($matchedSpreadsheet))->save(storage_path('app/public/matched.xlsx'));
 
-        // Statistiques
+        // Statistiques.
         $total = count($rows) - 1;
         $matchedCount = count($highlightedRows);
         $unmatchedCount = $total - $matchedCount;
