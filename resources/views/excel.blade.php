@@ -112,39 +112,61 @@
         <form method="POST" action="{{ route('excel.upload') }}" enctype="multipart/form-data">
             @csrf
             <div class="form-row">
-                <input type="file" name="file" required>
+                <input type="file" name="file" id="fileInput" required>
                 <button type="submit">Charger</button>
             </div>
         </form>
 
         @if (session('download'))
-            <div class="download-buttons">
+            <div id="download-buttons" class="download-buttons">
                 <a href="{{ session('download') }}">
-                    <button>Télécharger le fichier traité</button>
+                    <button id="btn-processed">Télécharger le fichier traité</button>
                 </a>
                 <a href="{{ session('downloadUnmatched') }}">
-                    <button>Télécharger les lignes non matchées</button>
+                    <button id="btn-unmatched">Télécharger les lignes non matchées</button>
                 </a>
             </div>
         @endif
 
         @if (session('stats'))
-            <h3>Résultat du traitement</h3>
-            <table class="stats">
-                <tr>
-                    <td>Nombre total de lignes</td>
-                    <td><strong>{{ session('stats.total') }}</strong></td>
-                </tr>
-                <tr>
-                    <td>Lignes matchées</td>
-                    <td><strong>{{ session('stats.matched') }} ({{ session('stats.match_percent') }}%)</strong></td>
-                </tr>
-                <tr>
-                    <td>Lignes non matchées</td>
-                    <td><strong>{{ session('stats.unmatched') }} ({{ session('stats.unmatch_percent') }}%)</strong></td>
-                </tr>
-            </table>
+            <div id="stats-table">
+                <h3>Résultat du traitement</h3>
+                <table class="stats">
+                    <tr>
+                        <td>Nombre total de lignes</td>
+                        <td><strong>{{ session('stats.total') }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Lignes matchées</td>
+                        <td><strong>{{ session('stats.matched') }} ({{ session('stats.match_percent') }}%)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Lignes non matchées</td>
+                        <td><strong>{{ session('stats.unmatched') }} ({{ session('stats.unmatch_percent') }}%)</strong></td>
+                    </tr>
+                </table>
+            </div>
         @endif
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('fileInput');
+            const downloadButtons = document.getElementById('download-buttons');
+            const statsTable = document.getElementById('stats-table');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', () => {
+                    if (downloadButtons) {
+                        downloadButtons.style.display = 'none';
+                    }
+
+                    if (statsTable) {
+                        statsTable.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
