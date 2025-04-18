@@ -16,18 +16,22 @@ class ExcelController extends Controller
 
     public function upload(Request $request)
     {
-        // 1. Validation du fichier
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv,txt',
         ]);
 
-        // 2. Chargement du fichier
+        // Nettoyage des anciens fichiers
+        @unlink(storage_path('app/public/processed.xlsx'));
+        @unlink(storage_path('app/public/unmatched.xlsx'));
+        @unlink(storage_path('app/public/matched.xlsx'));
+
+        // Chargement du fichier
         $file = $request->file('file');
         $spreadsheet = IOFactory::load($file->getPathname());
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray(null, true, true, true);
 
-        // 3. Trouver les indexes des colonnes
+        // Index des colonnes
         $headers = $rows[1];
         $colInsee = array_search('insee', $headers);
         $colInseeListe = array_search('insee_liste', $headers);
@@ -36,7 +40,6 @@ class ExcelController extends Controller
             return back()->withErrors(['Le fichier doit contenir les colonnes insee et insee_liste.']);
         }
 
-        // 4. Marquage des lignes matchées
         $highlightedRows = [];
 
         foreach ($rows as $i => $row) {
@@ -53,15 +56,13 @@ class ExcelController extends Controller
             }
         }
 
-        // 5. Génération du fichier traité
+        // Fichier traité
         $processedFile = storage_path('app/public/processed.xlsx');
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($processedFile);
+        (new Xlsx($spreadsheet))->save($processedFile);
 
-        // 6. Génération du fichier des lignes non matchées
+        // Fichier unmatched
         $unmatchedSpreadsheet = new Spreadsheet();
         $unmatchedSheet = $unmatchedSpreadsheet->getActiveSheet();
-
         $rowIndex = 1;
         foreach ($rows as $i => $row) {
             if ($i === 1) {
@@ -75,23 +76,48 @@ class ExcelController extends Controller
                 $rowIndex++;
             }
         }
+        (new Xlsx($unmatchedSpreadsheet))->save(storage_path('app/public/unmatched.xlsx'));
 
-        $unmatchedFile = storage_path('app/public/unmatched.xlsx');
-        $writer2 = new Xlsx($unmatchedSpreadsheet);
-        $writer2->save($unmatchedFile);
+        // ✅ Fichier matched
+        $matchedSpreadsheet = new Spreadsheet();
+        $matchedSheet = $matchedSpreadsheet->getActiveSheet();
+        $rowIndex = 1;
+        foreach ($rows as $i => $row) {
+            if ($i === 1) {
+                $matchedSheet->fromArray(array_values($row), null, "A$rowIndex");
+                $rowIndex++;
+                continue;
+            }
 
-        // 7. Statistiques
+            // Si la ligne est dans les lignes mises en surbrillance, sans coloriage
+            // if (in_array($i, $highlightedRows)) {
+            //     $matchedSheet->fromArray(array_values($row), null, "A$rowIndex");
+            //     $rowIndex++;
+            // }
+
+            // Si la ligne est dans les lignes mises en surbrillance, avec coloriage en jaune
+            if (in_array($i, $highlightedRows)) {
+                $matchedSheet->fromArray(array_values($row), null, "A$rowIndex");
+                $matchedSheet->getStyle("A$rowIndex:Z$rowIndex")->getFill()->setFillType('solid')
+                    ->getStartColor()->setARGB('FFFFFF00'); // jaune
+                $rowIndex++;
+            }
+            
+        }
+        (new Xlsx($matchedSpreadsheet))->save(storage_path('app/public/matched.xlsx'));
+
+        // Statistiques
         $total = count($rows) - 1;
         $matchedCount = count($highlightedRows);
         $unmatchedCount = $total - $matchedCount;
         $matchPercent = $total > 0 ? round(($matchedCount / $total) * 100, 2) : 0;
         $unmatchPercent = $total > 0 ? round(($unmatchedCount / $total) * 100, 2) : 0;
 
-        // 8. Redirection avec données
         return redirect()->route('excel.index')
             ->with('success', 'Fichier traité avec succès.')
             ->with('download', route('excel.download'))
             ->with('downloadUnmatched', route('excel.downloadUnmatched'))
+            ->with('downloadMatched', route('excel.downloadMatched'))
             ->with('stats', [
                 'total' => $total,
                 'matched' => $matchedCount,
@@ -104,12 +130,18 @@ class ExcelController extends Controller
     public function download()
     {
         $path = storage_path('app/public/processed.xlsx');
-        return response()->download($path)->deleteFileAfterSend(true);
+        return response()->download($path)->deleteFileAfterSend(false);
     }
 
     public function downloadUnmatched()
     {
         $path = storage_path('app/public/unmatched.xlsx');
-        return response()->download($path)->deleteFileAfterSend(true);
+        return response()->download($path)->deleteFileAfterSend(false);
+    }
+
+    public function downloadMatched()
+    {
+        $path = storage_path('app/public/matched.xlsx');
+        return response()->download($path)->deleteFileAfterSend(false);
     }
 }
