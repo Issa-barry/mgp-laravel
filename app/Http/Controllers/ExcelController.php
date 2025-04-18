@@ -21,7 +21,7 @@ class ExcelController extends Controller
         ]);
 
         // Nettoyage des anciens fichiers
-        @unlink(storage_path('app/public/processed.xlsx'));
+        @unlink(storage_path('app/public/fichier_full_traite.xlsx'));
         @unlink(storage_path('app/public/unmatched.xlsx'));
         @unlink(storage_path('app/public/matched.xlsx'));
 
@@ -129,7 +129,7 @@ class ExcelController extends Controller
 
     public function download()
     {
-        $path = storage_path('app/public/processed.xlsx');
+        $path = storage_path('app/public/fichier_full_traite.xlsx');
         return response()->download($path)->deleteFileAfterSend(false);
     }
 
